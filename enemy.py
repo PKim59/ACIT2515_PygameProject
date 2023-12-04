@@ -23,10 +23,19 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.center = (400, 300)  # Initial position at the center
 
     def load_pattern(self, patterns):
-        self.pattern = patterns.get(self.name, [])
+        loaded_pattern = patterns.get(self.name, {}).get('pattern', [])
+        print(f"Loading patterns for {self.name}")
+        print(f"Loaded patterns: {loaded_pattern}")
+        self.pattern = loaded_pattern
 
     def get_next_move(self, current_index):
-        return self.pattern[current_index % len(self.pattern)]
+            if not self.pattern:
+                return None  # Handle empty pattern gracefully
+            try:
+                return self.pattern[current_index % len(self.pattern)]
+            except Exception as e:
+                print(f"Error in get_next_move: {e}")
+                print(f"Name: {self.name}, Pattern: {self.pattern}, Index: {current_index}")
 
     def update(self):
         pass  # You can add any updates needed for the enemy sprite

@@ -3,6 +3,7 @@ import pygame
 import sys
 import toml
 
+
 class CustomizeScreen:
     def __init__(self):
         pygame.init()
@@ -118,8 +119,10 @@ class CustomizeScreen:
             toml.dump(patterns, file)
 
         # Exit the customization screen and start the game
-        pygame.quit()
-        sys.exit()
+        from main import main_game
+        screen = pygame.display.set_mode((800, 600))
+        clock = pygame.time.Clock()
+        main_game(screen, clock, level=4)
 
     def back(self):
         # Exit the customization screen
