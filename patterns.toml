@@ -1,0 +1,9 @@
+# patterns.toml
+[Enemy1]
+pattern = ["L", "L", "R", "L", "L", "R", "L", "L", "Both", "Rest", "Rest"]
+
+[Enemy2]
+pattern = ["R", "R", "Both", "L", "L", "Both", "Both", "Both", "Both", "Rest"]
+
+[Enemy3]
+pattern = ["L", "R", "L", "R", "L", "L", "R", "R", "Both", "Both", "L", "Both", "Rest"]
