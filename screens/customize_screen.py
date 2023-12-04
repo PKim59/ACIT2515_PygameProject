@@ -1,7 +1,7 @@
 # customize_screen.py
 import pygame
 import sys
-import yaml
+import toml
 
 class CustomizeScreen:
     def __init__(self):
@@ -17,7 +17,7 @@ class CustomizeScreen:
         # Check for existing "CustomEnemy" pattern in the TOML file
         try:
             with open("patterns.toml", "r") as file:
-                patterns = yaml.load(file, Loader=yaml.FullLoader)
+                patterns = toml.load(file)
                 self.pattern = patterns.get("CustomEnemy", [])
                 self.update_text()
         except FileNotFoundError:
@@ -102,20 +102,20 @@ class CustomizeScreen:
     def save_and_load(self):
         # Save the custom pattern to the patterns dictionary
         with open("patterns.toml", "r") as file:
-            patterns = yaml.load(file, Loader=yaml.FullLoader)
+            patterns = toml.load(file)
 
         patterns["CustomEnemy"] = self.pattern  # Use the correct key
         with open("patterns.toml", "w") as file:
-            yaml.dump(patterns, file)
+            toml.dump(patterns, file)
 
     def start_custom_fight(self):
         # Save the custom pattern to the patterns dictionary
         with open("patterns.toml", "r") as file:
-            patterns = yaml.load(file, Loader=yaml.FullLoader)
+            patterns = toml.load(file)
 
         patterns["CustomEnemy"] = self.pattern  # Use the correct key
         with open("patterns.toml", "w") as file:
-            yaml.dump(patterns, file)
+            toml.dump(patterns, file)
 
         # Exit the customization screen and start the game
         pygame.quit()

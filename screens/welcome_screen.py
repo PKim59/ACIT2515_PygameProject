@@ -10,7 +10,8 @@ class WelcomeScreen(ScreenBase):
         self.quit_button = pygame.Rect(350, 400, 100, 50)
 
     def run(self):
-        while True:
+        run_condition = True
+        while run_condition:
             self.handle_events()
             self.screen.fill((255, 255, 255))
             title_text = self.font.render("Fighting Time", True, (0, 0, 0))
@@ -30,11 +31,22 @@ class WelcomeScreen(ScreenBase):
 
             self.update_display()
 
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.start_button.collidepoint(event.pos):
-                        return "start"
-                    elif self.customize_button.collidepoint(event.pos):
-                        return "customize"
-                    elif self.quit_button.collidepoint(event.pos):
-                        pygame.quit()
+            if hasattr(self, 'choice'):
+                return self.choice
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.start_button.collidepoint(event.pos):
+                    self.choice = "start"
+                    return self.choice
+                elif self.customize_button.collidepoint(event.pos):
+                    self.choice = "customize"
+                    return self.choice
+                elif self.quit_button.collidepoint(event.pos):
+                    pygame.quit()
+

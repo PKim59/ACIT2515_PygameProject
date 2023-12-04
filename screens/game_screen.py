@@ -1,59 +1,85 @@
 # game_screen.py
 import pygame
 import sys
-import yaml
+import toml
+from pygame.locals import *
+from screens.welcome_screen import WelcomeScreen
+from enemy import Enemy
+from player import Player
 
 # Constants
 FPS = 60
 WHITE = (255, 255, 255)
 
-def main_game(level=1, custom_pattern=None):
-    pygame.init()
+# Initialize Pygame
+pygame.init()
 
-    # Initialize Pygame window
-    screen = pygame.display.set_mode((800, 600))
-    clock = pygame.time.Clock()
+def display_message(screen, message, font_size, duration):
+    font = pygame.font.Font(None, font_size)
+    text = font.render(message, True, (255, 0, 0))
+    rect = text.get_rect(center=(400, 300))
+    screen.blit(text, rect)
+    pygame.display.flip()
+    pygame.time.delay(duration)
+
+def main_game(screen, clock, level=1, custom_pattern=None):
+    running = True
+    player_health = 3
+    enemy_health = 3
+    player = Player()
 
     # Load patterns from the TOML file
     with open("patterns.toml", "r") as file:
-        patterns = yaml.load(file, Loader=yaml.FullLoader)
+        patterns = toml.load(file)
 
-    # Use custom pattern if provided, otherwise use Enemy1 pattern
-    enemy_pattern = custom_pattern or patterns.get(f"Enemy{level}", [])
+    # Define enemy names
+    enemy_names = ["Enemy1", "Enemy2", "Enemy3"]
 
-    # ... (initialize other game variables)
+    # Create Enemy instances and load patterns
+    enemies = [Enemy(name) for name in enemy_names]
+    for enemy in enemies:
+        enemy.load_pattern(patterns)
 
-    # Game loop
-    running = True
+    # Global variables and constants
     current_turn = 0
-    player_input = None
+    turn_duration = 3000  # 3 seconds in milliseconds
     enemy_pattern_index = 0
 
-    # Countdown variables
-    countdown_seconds = 3
-    countdown_font = pygame.font.Font(None, 100)
+    # Draw the player and enemies at the beginning
+    screen.fill(WHITE)
+    screen.blit(player.image, player.rect)
+    for enemy in enemies:
+        screen.blit(enemy.image, enemy.rect)
+    pygame.display.flip()
+
+    # Wait for a short moment (e.g., 1 second) to display the initial setup
+    pygame.time.delay(1000)
 
     while running:
+        screen.fill(WHITE)
+
+        # Draw the player
+        screen.blit(player.image, player.rect)
+
+        # Draw the enemies
+        for enemy in enemies:
+            screen.blit(enemy.image, enemy.rect)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Display countdown
-        if current_turn < FPS * countdown_seconds:
-            countdown_text = str(countdown_seconds - current_turn // FPS + 1)
-            countdown_surface = countdown_font.render(countdown_text, True, (255, 0, 0))
-            countdown_rect = countdown_surface.get_rect(center=(400, 300))
-            screen.blit(countdown_surface, countdown_rect)
-
-        # Check if it's the player's turn after the countdown
-        elif current_turn % 180 == 0:  # 180 frames at 60 FPS is 3 seconds
-            player_input = None  # Reset player input at the start of the turn
+        # Check if it's the player's turn
+        if current_turn % turn_duration == 0:
+            player_input = None
+            start_time = pygame.time.get_ticks()
 
             # Player has 3 seconds to input a key
-            while pygame.time.get_ticks() - (current_turn * 1000 / FPS) < 3000:
+            while pygame.time.get_ticks() - start_time < 3000:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        running = False
+                        pygame.quit()
+                        sys.exit()
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_a:
                             player_input = "a"
@@ -66,18 +92,40 @@ def main_game(level=1, custom_pattern=None):
 
             # Check if the player's input matches the enemy's pattern
             if player_input is not None:
-                enemy_move = enemy_pattern[enemy_pattern_index]
-                if (player_input == "a" and enemy_move == "L") or \
-                   (player_input == "d" and enemy_move == "R") or \
-                   (player_input == "s" and enemy_move == "Both") or \
-                   (player_input == "w" and enemy_move == "Rest"):
-                    print("Player successfully parried!")
-                else:
-                    print("Player failed to parry. Player takes 1 point of damage.")
+                for enemy in enemies:
+                    enemy_move = enemy.get_next_move(enemy_pattern_index)
+                    if (
+                        (player_input == "a" and enemy_move == "L")
+                        or (player_input == "d" and enemy_move == "R")
+                        or (player_input == "s" and enemy_move == "Both")
+                        or (player_input == "w" and enemy_move == "Rest")
+                    ):
+                        print("Player successfully parried!")
+                    else:
+                        print("Player failed to parry. Player takes 1 point of damage.")
+                        player_health -= 1
 
-                enemy_pattern_index = (enemy_pattern_index + 1) % len(enemy_pattern)
+                enemy_pattern_index = (enemy_pattern_index + 1) % len(enemies[0].pattern)
 
-        # ... (update and draw game elements)
+        # Check for game over conditions
+        if player_health <= 0 or enemy_health <= 0:
+            # Draw the return button
+            return_button = pygame.Rect(300, 400, 200, 50)
+            pygame.draw.rect(screen, (0, 128, 255), return_button)
+            font = pygame.font.Font(None, 36)
+            text = font.render("Return to Welcome Screen", True, (255, 255, 255))
+            screen.blit(text, (310, 415))
+
+            # Check if the return button is clicked
+            if return_button.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                welcome_screen = WelcomeScreen()
+                choice = welcome_screen.run()
+                if choice == "start":
+                    # Restart the game
+                    main_game(screen, clock, level=1)
+                elif choice == "customize":
+                    # Customize screen logic
+                    pass
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -85,6 +133,3 @@ def main_game(level=1, custom_pattern=None):
 
     pygame.quit()
     sys.exit()
-
-if __name__ == "__main__":
-    main_game()
