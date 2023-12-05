@@ -25,6 +25,7 @@ while True:
     if choice == "start":
         # Start the game
         main_game(screen, clock, level=1)
+        #return from loop in game_screen and add logic that looks for player.hp being returned.
     elif choice == "customize":
         customize_screen = CustomizeScreen()
         customize_screen.run()

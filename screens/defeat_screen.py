@@ -29,7 +29,7 @@ class DefeatScreen(ScreenBase):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     if restart_button.collidepoint(event.pos):
                         running = False  # Exit the loop
 

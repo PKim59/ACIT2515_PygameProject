@@ -41,29 +41,22 @@ def display_message(screen, message, font_size, duration):
     pygame.time.delay(duration)
 
 def update_positions():
-    global isAnimating, original_player_pos, original_enemy_pos, isReturning
-    if isAnimating:
-        if not isReturning:
-            midpoint_x = (original_player_pos[0] + original_enemy_pos[0]) / 2
-            midpoint_y = (original_player_pos[1] + original_enemy_pos[1]) / 2
+    player.rect.x = 450
+    player.rect.y = 450
+    enemy.rect.x = 440
+    enemy.rect.y = 440
+    pygame.display.flip()
 
-            player.rect.x = midpoint_x if player.rect.x < midpoint_x else midpoint_x
-            player.rect.y = midpoint_y if player.rect.y < midpoint_y else midpoint_y
-            enemy.rect.x = midpoint_x if enemy.rect.x < midpoint_x else midpoint_x
-            enemy.rect.y = midpoint_y if enemy.rect.y < midpoint_y else midpoint_y
 
-            isReturning = True
-        else:
-            player.rect.x = original_player_pos[0]
-            player.rect.y = original_player_pos[1]
-            enemy.rect.x = original_enemy_pos[0]
-            enemy.rect.y = original_enemy_pos[1]
-
-            isAnimating = False
-            isReturning = False
+def return_positions():
+    player.rect.x = original_player_pos[0]
+    player.rect.y = original_player_pos[1]
+    enemy.rect.x = original_enemy_pos[0]
+    enemy.rect.y = original_enemy_pos[1]
+    pygame.display.flip()
 
 def main_game(screen, clock, level=1, custom_pattern=None):
-    global original_player_pos, original_enemy_pos, isAnimating
+    player = Player()
     start_time = pygame.time.get_ticks()
     player_input = None
     isAnimating = False
@@ -122,8 +115,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         screen.blit(enemy_move_text, text_rect)
 
         pygame.display.flip()
-        update_positions()
-        isAnimating = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -148,28 +139,35 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     or (player_input == "d" and enemy_move == "R")
                     or (player_input == "s" and enemy_move == "Both")
                 ):
-                    isAnimating = True
-                    print(f"isAnimating: {isAnimating}")
                     update_positions()
                     success_text = font.render("PARRY!", True, (0, 0, 0))
                     success_location = success_text.get_rect(center=(400, 500))
                     screen.blit(success_text, success_location)
                     pygame.display.flip()
                     pygame.time.delay(1000)
-
+                    return_positions()
+                    player_input = None
+                elif (
+                    (player_input == "a" and enemy_move == "Rest") or
+                    (player_input == "d" and enemy_move == "Rest") or
+                    (player_input == "s" and enemy_move == "Rest")
+                    ):
+                    display_message(screen, "Enemy Heals 1 HP", 30, 1000)
+                    enemy.hp += 1
+                    player_input = None
                 elif (player_input == "w" and enemy_move == "Rest"):
                     display_message(screen, "Player attacked the enemy!", 30, 1000)
                     enemy.hp -= 1
+                    player_input = None                    
                 else:
-                    display_message(screen, "Player did nothing!", 30, 1000)
+                    display_message(screen, "Player got hit!", 30, 1000)
                     player.hp -= 1
+                    player_input = None
                 # print(enemy_pattern_index)
                 # print(enemy.get_next_move(enemy_pattern_index))
                 # print(enemies)
                 enemy_pattern_index = (enemy_pattern_index + 1)
                 start_time = pygame.time.get_ticks()
-
-        update_positions()
 
         remaining_time = max(0, timer_interval - (pygame.time.get_ticks() - start_time))
 
@@ -187,7 +185,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     enemy = enemies[enemy_counter + 1]
                 enemy.hp = 3 
                 enemy_pattern_index = 0
-                successful_parry = False
                 pygame.display.flip()
 
         # Check for game over conditions
@@ -208,8 +205,9 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         pygame.display.flip()
         clock.tick(FPS)
 
-    pygame.quit()
-    sys.exit()
+    return player.hp
+    # pygame.quit()
+    # sys.exit()
 
 if __name__ == "__main__":
     # Add any additional initialization or calls here if needed
