@@ -5,6 +5,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.name = name
         self.pattern = []
+        self.hp = 3
 
         # Set color based on enemy name
         if self.name == "Enemy1":

@@ -25,9 +25,6 @@ def display_message(screen, message, font_size, duration):
 
 def main_game(screen, clock, level=1, custom_pattern=None):
     running = True
-    player_health = 3
-    enemy_health = 3
-    
     player = Player()
 
     # Load patterns from the TOML file
@@ -71,7 +68,7 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     parry_start_time = 0
     successful_parry = False
 
-    while player_health > 0:
+    while player.hp > 0:
         screen.fill(WHITE)
 
         # Draw the player
@@ -81,11 +78,11 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         screen.blit(enemy.image, enemy.rect)
 
         # Display player health in the upper left corner
-        player_health_text = font.render(f"Player Health: {player_health}", True, (0, 0, 0))
+        player_health_text = font.render(f"Player Health: {player.hp}", True, (0, 0, 0))
         screen.blit(player_health_text, (10, 10))
 
         # Display enemy health in the upper right corner
-        enemy_health_text = font.render(f"Enemy Health: {enemy_health}", True, (0, 0, 0))
+        enemy_health_text = font.render(f"Enemy Health: {enemy.hp}", True, (0, 0, 0))
         screen.blit(enemy_health_text, (600, 10))
 
         # Display current enemy move in the center, above the enemy
@@ -132,10 +129,10 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                 print("Player successfully parried!")
             elif (player_input == "w" and enemy_move == "Rest"):
                 print("Player successfully attacked!")
-                enemy_health -= 1
+                enemy.hp -= 1
             else:
                 print("Player failed to parry. Player takes 1 point of damage.")
-                player_health -= 1
+                player.hp -= 1
 
             enemy_pattern_index = (enemy_pattern_index + 1)
 
@@ -143,7 +140,7 @@ def main_game(screen, clock, level=1, custom_pattern=None):
             display_message(screen, "Player successfully parried!", 30, 1000)
             successful_parry = False
 
-        if enemy_health == 0:
+        if enemy.hp == 0:
             display_message(screen, "Player wins!", 30, 1000)
 
             # Draw the restart button
@@ -155,14 +152,14 @@ def main_game(screen, clock, level=1, custom_pattern=None):
             # Check if the restart button is clicked
             if restart_button.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 level += 1  # Move to the next enemy
-                enemy_health = 3  # Reset enemy health
+                enemy.hp = 3  # Reset enemy health
                 enemy_pattern_index = 0  # Reset enemy pattern index
                 current_turn = 0  # Reset the turn count
                 successful_parry = False  # Reset successful parry flag
                 main_game(screen, clock, level=level)
 
         # Check for game over conditions
-        if player_health == 0:
+        if player.hp == 0:
             # Draw the return button
             return_button = pygame.Rect(300, 400, 200, 50)
             pygame.draw.rect(screen, (0, 128, 255), return_button)
