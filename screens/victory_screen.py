@@ -1,4 +1,4 @@
-from screen_base import ScreenBase
+from screens.screen_base import ScreenBase
 from pygame.locals import *
 import pygame
 

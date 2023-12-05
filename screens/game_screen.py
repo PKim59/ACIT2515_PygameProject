@@ -1,4 +1,3 @@
-# game_screen.py
 import pygame
 import sys
 import toml
@@ -7,6 +6,8 @@ from screens.welcome_screen import WelcomeScreen
 from enemy import Enemy
 from player import Player
 from screens.customize_screen import CustomizeScreen
+from screens.victory_screen import VictoryScreen
+from screens.defeat_screen import DefeatScreen
 
 # Constants
 FPS = 60
@@ -43,13 +44,14 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
     # Create Enemy instances and load patterns
     enemies = [Enemy(name) for name in enemy_names]
+    enemy_counter = 0
 
     if level == 1:
-        enemy = enemies[0]
+        enemy = enemies[enemy_counter]
     elif level == 2:
-        enemy = enemies[1]
+        enemy = enemies[enemy_counter + 1]
     elif level == 3:
-        enemy = enemies[2]
+        enemy = enemies[enemy_counter + 2]
     elif custom_pattern is not None:
         enemy = enemies[3]
 
@@ -92,12 +94,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
         pygame.display.flip()
 
-        # while pygame.time.get_ticks() - start_time < 1000:
-        #     for event in pygame.event.get():
-        #         if event.type == pygame.QUIT:
-        #             pygame.quit()
-        #             sys.exit()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -113,7 +109,9 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                 elif event.key == pygame.K_s:
                     player_input = "s"
             elif event.type == pygame.USEREVENT:
+                enemy.load_pattern(patterns)
                 enemy_move = enemy.get_next_move(enemy_pattern_index)
+                display_message(screen, f"Enemy move: {enemy_move}", 30, 1000)
                 if (
                     (player_input == "a" and enemy_move == "L")
                     or (player_input == "d" and enemy_move == "R")
@@ -129,8 +127,10 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                 else:
                     display_message(screen, "Player did nothing!", 30, 1000)
                     player.hp -= 1
-
-                enemy_pattern_index = (enemy_pattern_index + 1) % len(enemy.pattern)
+                print(enemy_pattern_index)
+                print(enemy.get_next_move(enemy_pattern_index))
+                print(enemies)
+                enemy_pattern_index = (enemy_pattern_index + 1)
                 start_time = pygame.time.get_ticks()
 
         remaining_time = max(0, timer_interval - (pygame.time.get_ticks() - start_time))
@@ -140,36 +140,21 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         pygame.display.flip()
 
         if enemy.hp == 0:
-            pygame.display.flip()
-            display_message(screen, "Player wins!", 30, 1000)
-
-            # Draw the restart button
-            restart_button = pygame.Rect(300, 400, 200, 50)
-            pygame.draw.rect(screen, (0, 128, 0), restart_button)
-            restart_text = font.render("Next Enemy", True, (255, 255, 255))
-            screen.blit(restart_text, (340, 415))
-
-            # Check if the restart button is clicked
-            if restart_button.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                level += 1  # Move to the next enemy
-                enemy.hp = 3  # Reset enemy health
-                enemy_pattern_index = 0  # Reset enemy pattern index
-                current_turn = 0  # Reset the turn count
-                successful_parry = False  # Reset successful parry flag
-                main_game(screen, clock, level=level)
-
-            break
+            victory_screen = VictoryScreen()
+            if victory_screen.display():
+                level += 1
+                if enemy_counter >= len(enemies):
+                    enemy_counter = 0
+                else:
+                    enemy = enemies[enemy_counter + 1]
+                enemy.hp = 3 
+                enemy_pattern_index = 0
+                successful_parry = False
 
         # Check for game over conditions
         if player.hp == 0:
-            # Draw the return button
-            return_button = pygame.Rect(300, 400, 200, 50)
-            pygame.draw.rect(screen, (0, 128, 255), return_button)
-            text = font.render("Return to Welcome Screen", True, (255, 255, 255))
-            screen.blit(text, (310, 415))
-
-            # Check if the return button is clicked
-            if return_button.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+            defeat_screen = DefeatScreen()
+            if defeat_screen.display():
                 welcome_screen = WelcomeScreen()
                 choice = welcome_screen.run()
                 if choice == "start":
@@ -179,7 +164,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     customize_screen = CustomizeScreen()
                     customize_screen.run()
                     pass
-            break
 
         pygame.display.flip()
         clock.tick(FPS)

@@ -1,8 +1,8 @@
-from screen_base import ScreenBase
+from screens.screen_base import ScreenBase
 from pygame.locals import *
 import pygame
 
-class GameOverScreen(ScreenBase):
+class DefeatScreen(ScreenBase):
     def __init__(self):
         super().__init__()
 
