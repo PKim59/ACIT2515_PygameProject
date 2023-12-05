@@ -14,10 +14,11 @@ WHITE = (255, 255, 255)
 
 # Initialize Pygame
 pygame.init()
+pygame.time.set_timer(pygame.USEREVENT, 2000)  # 2000 milliseconds = 2 seconds
 
 def display_message(screen, message, font_size, duration):
     font = pygame.font.Font(None, font_size)
-    text = font.render(message, True, (255, 0, 0))
+    text = font.render(message, True, (0, 0, 0))
     rect = text.get_rect(center=(400, 300))
     screen.blit(text, rect)
     pygame.display.flip()
@@ -49,24 +50,17 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     enemy.load_pattern(patterns)
     print(f"Loading patterns for {enemy.name}")
     print(f"Loaded patterns: {enemy.pattern}")
-    # Global variables and constants
-    turn_duration = 3000  # 3 seconds in milliseconds
+    
     enemy_pattern_index = 0
 
-    # Create font for textboxes
     font = pygame.font.Font(None, 36)
+    successful_parry = False
 
     # Draw the player and enemies at the beginning
     screen.fill(WHITE)
     screen.blit(player.image, player.rect)
     screen.blit(enemy.image, enemy.rect)
     pygame.display.flip()
-
-    # Wait for a short moment (e.g., 1 second) to display the initial setup
-    pygame.time.delay(1000)
-
-    parry_start_time = 0
-    successful_parry = False
 
     while player.hp > 0:
         screen.fill(WHITE)
@@ -92,53 +86,56 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
         pygame.display.flip()
 
+        # while pygame.time.get_ticks() - start_time < 1000:
+        #     for event in pygame.event.get():
+        #         if event.type == pygame.QUIT:
+        #             pygame.quit()
+        #             sys.exit()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    player_input = "a"
+                elif event.key == pygame.K_d:
+                    player_input = "d"
+                elif event.key == pygame.K_w:
+                    player_input = "w"
+                elif event.key == pygame.K_s:
+                    player_input = "s"
+            elif event.type == pygame.USEREVENT:
+                enemy_move = enemy.get_next_move(enemy_pattern_index)
+                if (
+                    (player_input == "a" and enemy_move == "L")
+                    or (player_input == "d" and enemy_move == "R")
+                    or (player_input == "s" and enemy_move == "Both")
+                ):
+                    successful_parry = True
+                    if successful_parry:
+                        display_message(screen, "Player successfully parried!", 30, 1000)
+                        successful_parry = False  
+                elif (player_input == "w" and enemy_move == "Rest"):
+                    display_message(screen, "Player attacked the enemy!", 30, 1000)
+                    enemy.hp -= 1
+                else:
+                    display_message(screen, "Player attacked the enemy!", 30, 1000)
+                    player.hp -= 1
 
-        # Check if it's the player's turn
+                enemy_pattern_index = (enemy_pattern_index + 1) % len(enemy.pattern)
+
+      
+
         player_input = None
         start_time = pygame.time.get_ticks()
 
         # Player has 3 seconds to input a key
-        while pygame.time.get_ticks() - start_time < 1000:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_a:
-                        player_input = "a"
-                    elif event.key == pygame.K_d:
-                        player_input = "d"
-                    elif event.key == pygame.K_w:
-                        player_input = "w"
-                    elif event.key == pygame.K_s:
-                        player_input = "s"
+
 
         # Check if the player's input matches the enemy's pattern
-        if player_input is not None:
-            enemy_move = enemy.get_next_move(enemy_pattern_index)
-            if (
-                (player_input == "a" and enemy_move == "L")
-                or (player_input == "d" and enemy_move == "R")
-                or (player_input == "s" and enemy_move == "Both")
-            ):
-                successful_parry = True
-                parry_start_time = pygame.time.get_ticks()
-                print("Player successfully parried!")
-            elif (player_input == "w" and enemy_move == "Rest"):
-                print("Player successfully attacked!")
-                enemy.hp -= 1
-            else:
-                print("Player failed to parry. Player takes 1 point of damage.")
-                player.hp -= 1
 
-            enemy_pattern_index = (enemy_pattern_index + 1)
-
-        if successful_parry:
-            display_message(screen, "Player successfully parried!", 30, 1000)
-            successful_parry = False
 
         if enemy.hp == 0:
             display_message(screen, "Player wins!", 30, 1000)
