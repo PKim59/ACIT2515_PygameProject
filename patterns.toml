@@ -1,5 +1,6 @@
 [Enemy1]
-pattern = ["L", "L", "R", "L", "L", "R", "L", "L", "Both", "Rest", "Rest"]
+pattern = ["Rest"]
+fpattern = ["L", "L", "R", "L", "L", "R", "L", "L", "Both", "Rest", "Rest"]
 
 [Enemy2]
 pattern = ["R", "R", "Both", "L", "L", "Both", "Both", "Both", "Both", "Rest"]

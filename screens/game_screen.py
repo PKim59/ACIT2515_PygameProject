@@ -11,10 +11,14 @@ from screens.customize_screen import CustomizeScreen
 # Constants
 FPS = 60
 WHITE = (255, 255, 255)
+timer_interval = 3000
+countdown_timer = timer_interval
+start_time = pygame.time.get_ticks()
 
 # Initialize Pygame
 pygame.init()
-pygame.time.set_timer(pygame.USEREVENT, 2000)  # 2000 milliseconds = 2 seconds
+pygame.time.set_timer(pygame.USEREVENT, 3000)  # 2000 milliseconds = 2 seconds
+
 
 def display_message(screen, message, font_size, duration):
     font = pygame.font.Font(None, font_size)
@@ -25,6 +29,8 @@ def display_message(screen, message, font_size, duration):
     pygame.time.delay(duration)
 
 def main_game(screen, clock, level=1, custom_pattern=None):
+    start_time = pygame.time.get_ticks()
+    player_input = None
     running = True
     player = Player()
 
@@ -121,23 +127,20 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     display_message(screen, "Player attacked the enemy!", 30, 1000)
                     enemy.hp -= 1
                 else:
-                    display_message(screen, "Player attacked the enemy!", 30, 1000)
+                    display_message(screen, "Player did nothing!", 30, 1000)
                     player.hp -= 1
 
                 enemy_pattern_index = (enemy_pattern_index + 1) % len(enemy.pattern)
+                start_time = pygame.time.get_ticks()
 
-      
+        remaining_time = max(0, timer_interval - (pygame.time.get_ticks() - start_time))
 
-        player_input = None
-        start_time = pygame.time.get_ticks()
-
-        # Player has 3 seconds to input a key
-
-
-        # Check if the player's input matches the enemy's pattern
-
+        ctimer = font.render(f"Countdown: {remaining_time // 1000} seconds", True, (0,0,0))
+        screen.blit(ctimer, (30, 30))
+        pygame.display.flip()
 
         if enemy.hp == 0:
+            pygame.display.flip()
             display_message(screen, "Player wins!", 30, 1000)
 
             # Draw the restart button
@@ -154,6 +157,8 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                 current_turn = 0  # Reset the turn count
                 successful_parry = False  # Reset successful parry flag
                 main_game(screen, clock, level=level)
+
+            break
 
         # Check for game over conditions
         if player.hp == 0:
@@ -174,6 +179,7 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     customize_screen = CustomizeScreen()
                     customize_screen.run()
                     pass
+            break
 
         pygame.display.flip()
         clock.tick(FPS)
