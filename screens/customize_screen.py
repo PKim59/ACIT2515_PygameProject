@@ -1,7 +1,7 @@
 # customize_screen.py
 import pygame
 import sys
-import toml
+import csv
 
 
 class CustomizeScreen:
@@ -17,10 +17,12 @@ class CustomizeScreen:
 
         # Check for existing "CustomEnemy" pattern in the TOML file
         try:
-            with open("patterns.toml", "r") as file:
-                patterns = toml.load(file)
-                self.pattern = patterns.get("CustomEnemy", [])
-                self.update_text()
+            with open("patterns.csv", "r") as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if row[0] == "CustomEnemy":
+                        self.pattern = row[1:]
+                        self.update_text()
         except FileNotFoundError:
             pass
 
@@ -101,23 +103,27 @@ class CustomizeScreen:
         self.text = ', '.join(self.pattern)
 
     def save_and_load(self):
-        # Save the custom pattern to the patterns dictionary
-        with open("patterns.toml", "r") as file:
-            patterns = toml.load(file)
+        # Load all patterns from the CSV file
+        with open("patterns.csv", "r") as file:
+            reader = csv.reader(file)
+            patterns = list(reader)
 
-        patterns["CustomEnemy"] = self.pattern  # Use the correct key
-        with open("patterns.toml", "w") as file:
-            toml.dump(patterns, file)
+        # Replace the "CustomEnemy" pattern
+        for i, pattern in enumerate(patterns):
+            if pattern[0] == "CustomEnemy":
+                patterns[i] = ["CustomEnemy"] + self.pattern
+                break
+        else:
+            # If no "CustomEnemy" pattern was found, add a new one
+            patterns.append(["CustomEnemy"] + self.pattern)
 
+        # Save all patterns to the CSV file
+        with open("patterns.csv", "w", newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(patterns)
+    
     def start_custom_fight(self):
-        # Save the custom pattern to the patterns dictionary
-        with open("patterns.toml", "r") as file:
-            patterns = toml.load(file)
-
-        patterns["CustomEnemy"] = self.pattern  # Use the correct key
-        with open("patterns.toml", "w") as file:
-            toml.dump(patterns, file)
-
+        self.save_and_load()
         # Exit the customization screen and start the game
         from main import main_game
         screen = pygame.display.set_mode((800, 600))

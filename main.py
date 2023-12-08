@@ -35,6 +35,8 @@ while True:
     elif choice == "customize":
         customize_screen = CustomizeScreen()
         customize_screen.run()
+    elif choice == "customfight":
+        main_game(screen, clock, level=4)
     elif choice == "level2":
         main_game(screen, clock, level=2)
     elif choice == "level3":

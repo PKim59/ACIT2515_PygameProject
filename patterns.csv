@@ -1,0 +1,4 @@
+Enemy1,L,L,R,L,L,R,L,L,Both,Rest,Rest
+Enemy2,R,R,Both,L,L,Both,Both,Both,Both,Rest
+Enemy3,L,R,L,R,L,L,R,R,Both,Both,L,Both,Rest
+CustomEnemy

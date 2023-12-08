@@ -1,6 +1,6 @@
 import pygame
 import sys
-import toml
+import csv
 from pygame.locals import *
 from screens.welcome_screen import WelcomeScreen
 from enemy import Enemy
@@ -72,18 +72,20 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     player_input = None
     isAnimating = False
 
-    # Load patterns from the TOML file
-    with open("patterns.toml", "r") as file:
-        patterns = toml.load(file)
+    # Load patterns from the csv file
+    with open("patterns.csv", "r") as file:
+        reader = csv.reader(file)
+        patterns = {rows[0]: rows[1:] for rows in reader}
+
     enemy_counter = 0
     if level == 1:
-        enemy = enemies[enemy_counter]
+        enemy = patterns['Enemy1']
     elif level == 2:
-        enemy = enemies[enemy_counter + 1]
+        enemy = patterns['Enemy2']
     elif level == 3:
-        enemy = enemies[enemy_counter + 2]
-    elif custom_pattern is not None:
-        enemy = enemies[3]
+        enemy = patterns['Enemy3']
+    elif level == 4:
+        enemy = patterns['CustomEnemy']
 
     original_player_pos = (player.rect.x, player.rect.y)
     original_enemy_pos = (enemy.rect.x, enemy.rect.y)
@@ -207,18 +209,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         ctimer = font.render(f"Countdown: {remaining_time // 1000} seconds", True, (0,0,0))
         screen.blit(ctimer, (30, 30))
         pygame.display.flip()
-
-        if enemy.hp == 0:
-            victory_screen = VictoryScreen()
-            if victory_screen.display():
-                level += 1
-                if enemy_counter > len(enemies):
-                    enemy_counter = 0
-                else:
-                    enemy = enemies[enemy_counter + 1]
-                enemy.hp = 3 
-                enemy_pattern_index = 0
-                pygame.display.flip()
 
         # Check for game over conditions
         if player.hp == 0:
