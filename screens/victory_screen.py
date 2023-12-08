@@ -1,6 +1,7 @@
 from screens.screen_base import ScreenBase
 from pygame.locals import *
 import pygame
+from screens.game_screen import main_game
 
 class VictoryScreen(ScreenBase):
     def __init__(self):
@@ -19,9 +20,9 @@ class VictoryScreen(ScreenBase):
             self.screen.blit(victory_text, (300, 200))
 
             # Draw the restart button
-            restart_button = pygame.Rect(300, 400, 200, 50)
-            pygame.draw.rect(self.screen, (0, 128, 0), restart_button)
-            restart_text = self.font.render("Next Enemy", True, (255, 255, 255))
+            return_button = pygame.Rect(300, 400, 200, 50)
+            pygame.draw.rect(self.screen, (0, 128, 0), return_button)
+            restart_text = self.font.render("Main Menu", True, (255, 255, 255))
             self.screen.blit(restart_text, (340, 415))
 
             self.update_display()
@@ -30,7 +31,6 @@ class VictoryScreen(ScreenBase):
                 if event.type == pygame.QUIT:
                     pygame.quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if restart_button.collidepoint(event.pos):
-                        running = False  # Exit the loop
-
-        return True  # Signal to move to the next level
+                    if return_button.collidepoint(event.pos):
+                        running = False
+        return True  

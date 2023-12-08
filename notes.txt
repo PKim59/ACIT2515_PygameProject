@@ -1,0 +1,20 @@
+List of broken things:
+
+Animations don't work, currently tied to the system clock which only allows one pixel movement or instantaneous movement.
+Moving to midpoint works, moving back does not.
+Answer: make the animation tied to a custom event, and have the looped code recognize the custom event occuring. Look at Step 4 (or near) of pygame for an example. the event has to be custom.
+
+
+no write to file function for custom enemy
+issues loading new pattern for enemy2, enemy3 when continuing.
+answer: NO NEED TO USE TOML, USE CSV or something else and write to it. Should make reading easier.
+
+still using basic squares and not other proper sprites.
+
+TO do: 
+
+Fix the issues above
+clean up the code, make comments for each section
+If I have time, replace the cubes with proper sprites.
+
+just do your best.

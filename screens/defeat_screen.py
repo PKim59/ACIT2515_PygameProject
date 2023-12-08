@@ -21,7 +21,7 @@ class DefeatScreen(ScreenBase):
             # Draw the restart button
             restart_button = pygame.Rect(300, 400, 200, 50)
             pygame.draw.rect(self.screen, (0, 128, 255), restart_button)
-            restart_text = self.font.render("Restart Game", True, (255, 255, 255))
+            restart_text = self.font.render("Main Menu", True, (255, 255, 255))
             self.screen.blit(restart_text, (340, 415))
 
             self.update_display()

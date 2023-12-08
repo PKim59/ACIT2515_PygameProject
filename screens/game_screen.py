@@ -8,10 +8,9 @@ from player import Player
 from screens.customize_screen import CustomizeScreen
 from screens.victory_screen import VictoryScreen
 from screens.defeat_screen import DefeatScreen
+from constants import *
 
 # Constants
-FPS = 60
-WHITE = (255, 255, 255)
 timer_interval = 3000
 countdown_timer = timer_interval
 start_time = pygame.time.get_ticks()
@@ -24,6 +23,11 @@ enemy_counter = 0
 enemy = enemies[0]
 isAnimating = False
 isReturning = False
+events = pygame.event.get()
+ANIMATION_EVENT_LEFT = pygame.USEREVENT + 1
+ANIMATION_EVENT_RIGHT = pygame.USEREVENT + 2
+ANIMATION_EVENT_MIDDLE = pygame.USEREVENT + 3
+
 
 original_player_pos = player.rect.x, player.rect.y 
 original_enemy_pos = enemy.rect.x, enemy.rect.y
@@ -47,6 +51,13 @@ def update_positions():
     enemy.rect.y = 440
     pygame.display.flip()
 
+def successful_parry():
+    success_text = font.render("PARRY!", True, (0, 0, 0))
+    success_location = success_text.get_rect(center=(400, 500))
+    screen.blit(success_text, success_location)
+    pygame.display.flip()
+    pygame.time.delay(1000)
+    player_input = None
 
 def return_positions():
     player.rect.x = original_player_pos[0]
@@ -84,13 +95,19 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     enemy_pattern_index = 0
 
     font = pygame.font.Font(None, 36)
-    successful_parry = False
 
     # Draw the player and enemies at the beginning
     screen.fill(WHITE)
     screen.blit(player.image, player.rect)
     screen.blit(enemy.image, enemy.rect)
     pygame.display.flip()
+
+    pygame.time.set_timer(ANIMATION_EVENT_MIDDLE, 1000)
+    pygame.time.set_timer(ANIMATION_EVENT_LEFT, 1000)
+    pygame.time.set_timer(ANIMATION_EVENT_RIGHT, 1000)
+    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_LEFT))
+    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_RIGHT))
+    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_MIDDLE))
 
     while player.hp > 0:
         screen.fill(WHITE)
@@ -116,11 +133,34 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
         pygame.display.flip()
 
-        for event in pygame.event.get():
+        # animation handlers
+        for event in events:
+            if event.type == ANIMATION_EVENT_LEFT:
+                enemy.left_attack()
+                player.left_dodge()
+                isAnimating = False
+            elif event.type == ANIMATION_EVENT_RIGHT:
+                enemy.right_attack()
+                player.right_dodge()
+                isAnimating = False
+            elif event.type == ANIMATION_EVENT_MIDDLE:
+                enemy.middle_attack()
+                player.left_dodge()
+                isAnimating = False
+
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 sys.exit()
+            if event.type == ANIMATION_EVENT_LEFT:
+                enemy.left_attack()
+                player.left_dodge()
+                isAnimating = False
+            elif event.type == ANIMATION_EVENT_RIGHT:
+                enemy.right_attack()
+                player.right_dodge()
+                isAnimating = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     player_input = "a"
@@ -134,19 +174,15 @@ def main_game(screen, clock, level=1, custom_pattern=None):
             elif event.type == pygame.USEREVENT:
                 enemy.load_pattern(patterns)
                 enemy_move = enemy.get_next_move(enemy_pattern_index)
-                if (
-                    (player_input == "a" and enemy_move == "L")
-                    or (player_input == "d" and enemy_move == "R")
-                    or (player_input == "s" and enemy_move == "Both")
-                ):
-                    update_positions()
-                    success_text = font.render("PARRY!", True, (0, 0, 0))
-                    success_location = success_text.get_rect(center=(400, 500))
-                    screen.blit(success_text, success_location)
-                    pygame.display.flip()
-                    pygame.time.delay(1000)
-                    return_positions()
-                    player_input = None
+                if player_input == "a" and enemy_move == "L":
+                    successful_parry()
+                    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_LEFT))
+                elif player_input == "d" and enemy_move == "R":
+                    successful_parry()
+                    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_RIGHT))
+                elif player_input == "s" and enemy_move == "Both":
+                    successful_parry()
+                    pygame.event.post(pygame.event.Event(ANIMATION_EVENT_MIDDLE))
                 elif (
                     (player_input == "a" and enemy_move == "Rest") or
                     (player_input == "d" and enemy_move == "Rest") or
@@ -163,9 +199,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
                     display_message(screen, "Player got hit!", 30, 1000)
                     player.hp -= 1
                     player_input = None
-                # print(enemy_pattern_index)
-                # print(enemy.get_next_move(enemy_pattern_index))
-                # print(enemies)
                 enemy_pattern_index = (enemy_pattern_index + 1)
                 start_time = pygame.time.get_ticks()
 
@@ -189,25 +222,13 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
         # Check for game over conditions
         if player.hp == 0:
-            defeat_screen = DefeatScreen()
-            if defeat_screen.display():
-                welcome_screen = WelcomeScreen()
-                choice = welcome_screen.run()
-                if choice == "start":
-                    # Restart the game
-                    main_game(screen, clock, level=1)
-                elif choice == "customize":
-                    #go to customize screen
-                    customize_screen = CustomizeScreen()
-                    customize_screen.run()
-                    pass
+            return player.hp
+        if enemy.hp == 0:
+            return enemy.hp
 
         pygame.display.flip()
         clock.tick(FPS)
 
-    return player.hp
-    # pygame.quit()
-    # sys.exit()
 
 if __name__ == "__main__":
     # Add any additional initialization or calls here if needed

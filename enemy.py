@@ -38,5 +38,33 @@ class Enemy(pygame.sprite.Sprite):
                 print(f"Error in get_next_move: {e}")
                 print(f"Name: {self.name}, Pattern: {self.pattern}, Index: {current_index}")
 
-    def update(self):
+    def return_position(self):
+        self.rect.center = (400, 300)
         pass  # You can add any updates needed for the enemy sprite
+
+    def left_attack(self):
+        # Define the start, midpoint, and end points
+        start_pos = pygame.Vector2(400, 300)
+        mid_pos = pygame.Vector2(300, 500)
+        end_pos = start_pos
+
+        # Define the speed of the animation
+        speed = 0.05
+
+        # Calculate the direction vector
+        if not self.isReturning:
+            direction = (mid_pos - start_pos).normalize()
+        else:
+            direction = (end_pos - mid_pos).normalize()
+
+        # Update the position
+        self.rect.center = start_pos + direction * speed
+
+        # If the cube has reached the midpoint and is not returning, start returning
+        if self.rect.center == mid_pos and not self.isReturning:
+            self.isReturning = True
+
+        # If the cube has reached the end position and is returning, stop the animation
+        if self.rect.center == end_pos and self.isReturning:
+            self.isAnimating = False
+            self.isReturning = False

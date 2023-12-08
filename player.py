@@ -10,7 +10,16 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = (400, 500)  # Initial position at the bottom middle
         self.hp = 3
 
-    def update(self):
+    def return_position(self):
+        self.rect.center = (400, 500)
         pass  # You can add any updates needed for the player
+
+    def left_dodge(self):
+        self.rect.center = (200, 500)
+        pass
+
+    def right_dodge(self):
+        self.rect.center = (600, 500)
+        pass
 
 
