@@ -31,7 +31,6 @@ original_player_pos = player.rect.x, player.rect.y
 original_enemy_pos = enemy.rect.x, enemy.rect.y
 
 # Initialize Pygame
-pygame.init()
 pygame.time.set_timer(pygame.USEREVENT, 3000)  # 2000 milliseconds = 2 seconds
 
 def display_message(screen, message, font_size, duration):
@@ -57,8 +56,7 @@ def return_positions():
     enemy.rect.y = original_enemy_pos[1]
     pygame.display.flip()
 
-def main_game(screen, clock, level=1, custom_pattern=None):
-    player = Player()
+def main_game(screen, clock, player, level=1, custom_pattern=None):
     start_time = pygame.time.get_ticks()
     player_input = None
 
@@ -87,7 +85,7 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     pygame.time.set_timer(ANIMATION_EVENT_LEFT, 3000)
     pygame.time.set_timer(ANIMATION_EVENT_RIGHT, 3000)
 
-    while player.hp > 0:
+    while player.hp > 0 and enemy.hp > 0:
         events = pygame.event.get()
         screen.fill(WHITE)
 
@@ -188,18 +186,13 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         screen.blit(ctimer, (30, 30))
         pygame.display.flip()
 
-        # Check for game over conditions
-        if player.hp == 0:
-            return player.hp
-        if enemy.hp == 0:
-            return enemy.hp
-
-        pygame.display.flip()
         clock.tick(FPS)
+    
+        # Check for game over conditions
+    if player.hp == 0:
+        choice = "defeat"
+        return choice
+    if enemy.hp == 0:
+        choice = "victory"
+        return choice
 
-
-if __name__ == "__main__":
-    # Add any additional initialization or calls here if needed
-    screen = pygame.display.set_mode((800, 600))
-    clock = pygame.time.Clock()
-    main_game(screen, clock)

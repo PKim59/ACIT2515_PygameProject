@@ -14,30 +14,37 @@ from screens.defeat_screen import DefeatScreen
 pygame.init()
 clock = pygame.time.Clock()
 
-player = Player()
 enemy = Enemy("Enemy1")
+player = Player()
 
 # Create Pygame screen
 screen = pygame.display.set_mode((800, 600))
 welcome_screen = WelcomeScreen()
+choice = "welcome"
 
 while True:
-    choice = welcome_screen.run()
-
-    if choice == "start":
+    if choice == "welcome":
+        choice = welcome_screen.run()
+    elif choice == "start":
+        print("is it here?")
         # Start the game
-        main_game(screen, clock, level=1)
+        choice = main_game(screen, clock, player, level=1)
+        print(choice + "where we returned from level1")
+        print("this is where we returned from maingame")
         #return from loop in game_screen and add logic that looks for player.hp being returned.
     elif choice == "customize":
         customize_screen = CustomizeScreen()
         customize_screen.run()
     elif choice == "customfight":
-        main_game(screen, clock, level=4)
+        choice = main_game(screen, clock, player, level=4)
     elif choice == "level2":
-        main_game(screen, clock, level=2)
+        choice = main_game(screen, clock, player, level=2)
     elif choice == "level3":
-        main_game(screen, clock, level=3)
-    elif player.hp == 0:
+        choice = main_game(screen, clock, player, level=3)
+    elif choice == "defeat":
         defeat_screen = DefeatScreen()
-    elif enemy.hp == 0:
+        choice = defeat_screen.display()
+        player.hp = 3
+    elif choice == "victory":
         victory_screen = VictoryScreen()
+        enemy.hp = 3

@@ -31,5 +31,5 @@ class VictoryScreen(ScreenBase):
                     pygame.quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if return_button.collidepoint(event.pos):
-                        running = False
-        return True  
+                        choice = "welcome"
+                        return choice

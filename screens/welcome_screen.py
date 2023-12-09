@@ -13,6 +13,7 @@ class WelcomeScreen(ScreenBase):
 
     def run(self):
         run_condition = True
+        self.choice = None
         while run_condition:
             self.handle_events()
             self.screen.fill((255, 255, 255))
@@ -39,7 +40,7 @@ class WelcomeScreen(ScreenBase):
 
             self.update_display()
 
-            if hasattr(self, 'choice'):
+            if self.choice != None:
                 return self.choice
 
     def handle_events(self):
