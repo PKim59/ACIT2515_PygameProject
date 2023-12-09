@@ -42,13 +42,6 @@ def display_message(screen, message, font_size, duration):
     pygame.display.flip()
     pygame.time.delay(duration)
 
-def update_positions():
-    player.rect.x = 450
-    player.rect.y = 450
-    enemy.rect.x = 440
-    enemy.rect.y = 440
-    pygame.display.flip()
-
 def successful_parry(screen):
     success_text = font.render("PARRY!", True, (0, 0, 0))
     success_location = success_text.get_rect(center=(400, 500))
@@ -86,7 +79,6 @@ def main_game(screen, clock, level=1, custom_pattern=None):
     font = pygame.font.Font(None, 36)
 
     # Draw the player and enemies at the beginning
-    screen.fill(WHITE)
     screen.blit(player.image, player.rect)
     screen.blit(enemy.image, enemy.rect)
     pygame.display.flip()
@@ -121,21 +113,26 @@ def main_game(screen, clock, level=1, custom_pattern=None):
         pygame.display.flip()
 
         # animation handlers
+
         for event in events:
             if event.type == ANIMATION_EVENT_LEFT:
-                enemy.left_attack()
-                player.left_dodge()
-                pygame.time.delay(1000)
-                player.return_position()
-                isAnimating = False
+                if not isAnimating:
+                    enemy.left_attack()
+                    player.left_dodge()
+                    player.return_position()
+                    isAnimating = False
             elif event.type == ANIMATION_EVENT_RIGHT:
-                enemy.left_attack() # testing animation, will make right_attack later
-                player.right_dodge()
-                isAnimating = False
+                if not isAnimating:
+                    enemy.left_attack() # testing animation, will make right_attack later
+                    player.right_dodge()
+                    isAnimating = False
             elif event.type == ANIMATION_EVENT_MIDDLE:
-                enemy.left_attack()
-                player.left_dodge()
-                isAnimating = False
+                if not isAnimating:
+                    enemy.left_attack()
+                    player.left_dodge()
+                    isAnimating = False
+        
+        isAnimating = True
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -189,6 +186,7 @@ def main_game(screen, clock, level=1, custom_pattern=None):
 
         ctimer = font.render(f"Countdown: {remaining_time // 1000} seconds", True, (0,0,0))
         screen.blit(ctimer, (30, 30))
+        pygame.display.flip()
 
         # Check for game over conditions
         if player.hp == 0:
