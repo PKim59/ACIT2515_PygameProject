@@ -1,7 +1,6 @@
 from screens.screen_base import ScreenBase
 from pygame.locals import *
 import pygame
-from screens.game_screen import main_game
 
 class VictoryScreen(ScreenBase):
     def __init__(self):

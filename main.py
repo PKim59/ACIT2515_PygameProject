@@ -10,16 +10,12 @@ from player import Player
 from screens.victory_screen import VictoryScreen
 from screens.defeat_screen import DefeatScreen
 
-# Load patterns from the TOML file
-with open("patterns.toml", "r") as file:
-    patterns = toml.load(file)
-
 # Initialize Pygame
 pygame.init()
 clock = pygame.time.Clock()
 
 player = Player()
-enemy = Enemy()
+enemy = Enemy("Enemy1")
 
 # Create Pygame screen
 screen = pygame.display.set_mode((800, 600))

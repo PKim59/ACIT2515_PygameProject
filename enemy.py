@@ -1,4 +1,5 @@
 import pygame
+import csv
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, name):
@@ -6,6 +7,8 @@ class Enemy(pygame.sprite.Sprite):
         self.name = name
         self.pattern = []
         self.hp = 3
+        self.isAnimating = False
+        self.isReturning = False
 
         # Set color based on enemy name
         if self.name == "Enemy1":
@@ -23,8 +26,12 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (400, 300)  # Initial position at the center
 
-    def load_pattern(self, patterns):
-        loaded_pattern = patterns.get(self.name, {}).get('pattern', [])
+    def load_pattern(self):
+        with open("patterns.csv", "r") as file:
+            reader = csv.reader(file)
+            patterns = {rows[0]: rows[1:] for rows in reader}
+
+        loaded_pattern = patterns.get(self.name, [])
         print(f"Loading patterns for {self.name}")
         print(f"Loaded patterns: {loaded_pattern}")
         self.pattern = loaded_pattern
@@ -53,18 +60,18 @@ class Enemy(pygame.sprite.Sprite):
 
         # Calculate the direction vector
         if not self.isReturning:
-            direction = (mid_pos - start_pos).normalize()
+            direction = (mid_pos - self.rect.center).normalize()
         else:
-            direction = (end_pos - mid_pos).normalize()
+            direction = (end_pos - self.rect.center).normalize()
 
         # Update the position
-        self.rect.center = start_pos + direction * speed
+        self.rect.center += direction * speed
 
         # If the cube has reached the midpoint and is not returning, start returning
-        if self.rect.center == mid_pos and not self.isReturning:
+        if (self.rect.center - mid_pos).length() < speed and not self.isReturning:
             self.isReturning = True
 
         # If the cube has reached the end position and is returning, stop the animation
-        if self.rect.center == end_pos and self.isReturning:
+        if (self.rect.center - end_pos).length() < speed and self.isReturning:
             self.isAnimating = False
             self.isReturning = False
